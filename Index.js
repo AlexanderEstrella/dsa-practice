@@ -738,7 +738,7 @@ myDoubly.push(2);
 myDoubly.push(3);
 //myDoubly.push(4);
 //console.log(myDoubly, "not reversed")
-console.log(myDoubly.reversed2());
+//console.log(myDoubly.reversed2());
 //console.log(myDoubly.shift())
 //console.log(myDoubly)
 //console.log(myDoubly, "last")
@@ -780,29 +780,35 @@ function sumAllCostsFlat(n) {
  * Time: O(V + E)
  * Space: O(V)
  */
-function sumCostsTraverse(graph) {
-  if (!graph || !graph.nodes || !graph.root) return 0;
+function sumTotalCost(graph) {
+  let total = 0;
+  let nodes = graph.nodes;
+  let map = new Set();
 
-  const visited = new Set();
-
-  function dfs(id) {
-    if (!id || visited.has(id)) return 0;
-    visited.add(id);
-
-    const node = graph.nodes[id];
-    if (!node) return 0;
-
-    let total = typeof node.cost === "number" ? node.cost : 0;
-
-    const children = Array.isArray(node.children) ? node.children : [];
-    for (const childId of children) {
-      total += dfs(childId);
+  function getMyCost(id) {
+    console.log("Visiting node:", id);
+    if (map.has(id)) return 0;
+    map.add(id);
+    
+    if (nodes[id].cost != null) {
+      console.log("Adding cost:", nodes[id].cost);
+      total += Number(nodes[id].cost);
     }
 
-    return total;
-  }
+    if (nodes[id].children) {
+      for (let child of nodes[id].children) {
+        getMyCost(child);
+      }
+    }
 
-  return dfs(graph.root);
+    return 0;
+  }
+  
+  console.log("Starting from root:", graph.root);
+  getMyCost(graph.root);
+  console.log("Final total:", total);
+
+  return total;
 }
 
 /* ============================================================
@@ -823,6 +829,7 @@ const hard = {
   },
 };
 
+//console.log(sumTotalCost(hard));
 // Quick sanity checks (comment out in “portfolio mode”)
 const arr = new MyArray();
 arr.push("apple"); arr.push("orange"); arr.push("mango");
@@ -840,3 +847,84 @@ dll.push(1).push(2).push(3);
  * Optional exports if you ever want to turn this into a module:
  * module.exports = { ... }
  * ============================================================ */
+
+
+/* ============================================================
+ * Stack
+ * 
+ * ============================================================ */
+
+
+
+class NodeStack {
+  constructor(value) {
+    this.value = value;
+    this.next = null;
+  }
+
+
+}
+
+class Stack {
+  constructor(value) {
+    const newNode = new NodeStack(value);
+    this.first = newNode;
+    this.length = 1;
+  }
+
+  PUSH (value) {
+    let newNode = new NodeStack(value);
+
+    newNode.next = this.first;
+    this.first = newNode;
+    this.length++;
+    return this;
+  }
+
+  POP () {
+   if (!this.first) throw new Error("No more items to Pop");
+    let first = this.first;
+    if (this.length <= 1 ) {
+      first.next = null;
+      this.first = null;
+      this.length = 0;
+      return this;
+
+    }
+    this.first = first.next;
+    first.next = null;
+    this.length--;
+    return this;
+  }
+}
+
+let theStack = new Stack(0);
+theStack.PUSH(1);
+
+theStack.PUSH(2);
+//console.log(theStack);
+//console.log(theStack.POP());
+//console.log(theStack.POP());
+//console.log(theStack.POP());
+//console.log(theStack.PUSH(0));
+//console.log(theStack.PUSH(1));
+
+//console.log(theStack.POP());
+//console.log(theStack.POP());
+//console.log(theStack.POP());
+
+
+
+
+
+/* ============================================================
+ * Optional exports if you ever want to turn this into a module:
+ * module.exports = { ... }
+ * ============================================================ */
+
+
+/* ============================================================
+ * Stack
+ * 
+ * ============================================================ */
+
