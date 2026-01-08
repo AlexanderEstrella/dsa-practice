@@ -456,7 +456,34 @@ class SinglyLinkedList {
     }
     return out;
   }
+
+  reversed() {
+  if (!this.head || this.length <= 1) return this;
+
+  let current = this.head;
+  const oldHead = this.head; // will become new tail
+  let previous = null;
+
+  while (current) {
+    const nextNode = current.next;
+    current.next = previous;
+    previous = current;
+    current = nextNode;
+  }
+
+  this.head = previous;   // new head
+  this.tail = oldHead;    // new tail
+  return this;
 }
+
+}
+
+
+const singlyList = new SinglyLinkedList(0);
+singlyList.push(1);
+singlyList.push(2);
+singlyList.push(3);
+//console.log(singlyList.reversed())
 
 /* ============================================================
  * 4) Doubly Linked List (O(1) pop/shift)
@@ -477,6 +504,8 @@ class DLLNode {
     this.prev = null; // standard naming: prev
   }
 }
+
+
 
 /**
  * Doubly Linked List
@@ -592,29 +621,6 @@ class DoublyLinkedList {
    *
    * @returns {DLLNode<T> | undefined}
    */
-  shift() {
-    if (!this.head) return undefined;
-
-    const shifted = this.head;
-
-    if (this.length === 1) {
-      this.head = null;
-      this.tail = null;
-      this.length = 0;
-      shifted.next = null;
-      shifted.prev = null;
-      return shifted;
-    }
-
-    this.head = shifted.next;
-    this.head.prev = null;
-
-    shifted.next = null;
-    shifted.prev = null;
-
-    this.length--;
-    return shifted;
-  }
 
   toArray() {
     const out = [];
@@ -625,7 +631,118 @@ class DoublyLinkedList {
     }
     return out;
   }
+
+ shift() {
+  if (!this.head) return undefined;
+
+  const shifted = this.head;
+
+  if (this.length === 1) {
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+    return shifted;
+  }
+
+  this.head = shifted.next;
+  this.head.prev = null;
+
+  shifted.next = null; 
+
+
+  this.length--;
+  return shifted;
 }
+
+
+/**
+ * Reverse the list in-place.
+ *
+ * Recruiter-facing contract (applies to BOTH methods below):
+ * - Mutates the existing list (nodes are re-linked; no new nodes created).
+ * - Returns `this` to allow chaining.
+ * - Handles edge cases safely: empty list and 0/1 node list are no-ops.
+ * - Time: O(n)  (touch each node once)
+ * - Space: O(1) (constant extra pointers)
+ */
+reversed() { // Strategy 1: "singly-style" walk forward using original next
+  if (!this.head || this.length <= 1) return this;
+
+  let current = this.head;
+  const oldHead = this.head;   // becomes new tail
+  let previous = null;
+
+  while (current) {
+    const nextNode = current.next;   // save original next
+
+    // reverse pointers
+    current.next = previous;         // next points backward
+    current.prev = nextNode;         // prev points forward (old next)
+
+    // advance
+    previous = current;
+    current = nextNode;
+  }
+
+  this.head = previous;              // new head
+  this.tail = oldHead;               // old head is new tail
+  return this;
+}
+
+/**
+ * Reverse the list in-place.
+ *
+ * Recruiter-facing contract:
+ * - Mutates list links by swapping `prev`/`next` on every node.
+ * - Returns `this` (chainable).
+ * - Safe on empty / single-node lists (no-op).
+ * - Time: O(n), Space: O(1)
+ *
+ * Key insight:
+ * - After swapping pointers, `current.prev` becomes the OLD `next`,
+ *   so `current = current.prev` walks forward through the ORIGINAL list.
+ */
+reversed2() { // Strategy 2: "true DLL swap" (swap prev/next per node)
+  if (!this.head || this.length <= 1) return this;
+
+  let current = this.head;
+  const oldHead = this.head; // becomes new tail
+  let temp = null;
+
+  while (current) {
+    temp = current.prev;       // save old prev
+
+    // swap pointers
+    current.prev = current.next;
+    current.next = temp;
+
+    // move forward in original list (prev is now old next)
+    current = current.prev;
+  }
+
+  this.tail = oldHead;
+  this.head = temp ? temp.prev : oldHead;
+  return this;
+}
+
+
+
+}
+
+
+
+
+const myDoubly = new DoublyLinkedList(0);
+myDoubly.push(1);
+myDoubly.push(2);
+myDoubly.push(3);
+//myDoubly.push(4);
+//console.log(myDoubly, "not reversed")
+console.log(myDoubly.reversed2());
+//console.log(myDoubly.shift())
+//console.log(myDoubly)
+//console.log(myDoubly, "last")
+
 
 /* ============================================================
  * 5) Graph-ish Object: Cost Sum + Cycle-safe Traversal
