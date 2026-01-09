@@ -924,7 +924,161 @@ theStack.PUSH(2);
 
 
 /* ============================================================
- * Stack
+ * Enqueue
  * 
  * ============================================================ */
+
+
+class NodeQueue {
+  constructor(value) {
+    this.value = value;
+    this.next = null;
+  }
+
+
+}
+
+class Queue {
+  constructor(value) {
+    this.first = new NodeQueue(value);
+    this.last = this.first;
+    this.length = 1;
+  }
+
+  enqueue (value) {
+    if (!this.first) return undefined;
+    let newNode = new NodeQueue(value);
+    this.last.next = newNode;
+    this.last = newNode;
+    this.length++;
+    //console.log("in");
+    return this;
+  }
+
+  dequeue () {
+   if (!this.first || !this.first.next) {
+        return null; 
+    }
+   let current = this.first;
+   while (current.next.next !== null) {
+   current = current.next;
+   }  
+   current.next = null;
+   this.last = current;
+   this.length--;
+   return this;
+  }
+
+  minimum () {
+
+  }
+
+
+}
+
+const myQueue = new Queue(0);
+myQueue.enqueue(1);
+myQueue.enqueue(2);
+myQueue.enqueue(3);
+//console.log(myQueue.dequeue());
+
+const nodes = {
+  A: { cost: 1, children: ["B", "C"] },
+  B: { cost: 2, children: ["D"] },
+  C: { cost: 10, children: [] },
+  D: { cost: 7, children: [] }
+};
+
+function getmystuff(id, myset = new Set()) {
+  if(myset.has(id)) return myset;
+  myset.add(id);
+ let children = nodes[id]?.children ?? [];
+ 
+  for (let child of children) {
+    getmystuff(child,myset)
+  }
+
+  return myset;
+}
+
+//console.log(getmystuff("A")); // 20
+
+const sortarray = [1,2,3,4,5]
+//reversed a sort list using recursion favorite
+function reversed (array) {
+  if (array.length === 1) {
+     return [array[0]];
+  }
+let first  = array[0];
+let rest = array.slice(1);
+
+return reversed(rest).concat(first);
+
+}
+//console.log(reversed(sortarray))
+
+
+
+const nodes2 = {
+  A: { value: 5, children: ["B", "C"] },
+  B: { value: 3, children: ["D", "E"] },
+  C: { value: 8, children: ["F"] },
+  D: { value: 2, children: [] },
+  E: { value: 4, children: [] },
+  F: { value: 1, children: [] }
+};
+
+// function that finds the MAXIMUM VALUE node
+// in a tree starting from a given node
+
+function getMaxNode(n, myset = new Set(), val = 0) {
+  if (myset.has(n)) return 0;
+  myset.add(n);
+  let node = nodes2[n];
+  console.log(node,"beginning")
+  val = node.value;
+  let children = node?.children ?? null;
+  for (let child of children) {
+    let insde = getMaxNode(child,myset,val);
+    val = val > {[n]:insde} ? n: child;
+  }
+
+return val;
+}
+
+//console.log(getMaxNode("F")); // Should return "C" (value 8)
+ // Should return "F" (value 1)
+
+
+ const nodes3 = {
+
+  A: { children: ["B", "C"] },
+  B: { children: ["D", "E"] },
+  C: { children: ["F"] },
+  D: { children: [] },
+  E: { children: [] },
+  F: { children: [] }
+};
+
+// tree/leaf traversal
+function getPaths (id) {
+//if (visited.has(id)) return [];
+if (nodes3[id].children.length === 0) return [[id]];
+//visited.add(id);
+
+let children = nodes3[id]?.children;
+let allPaths = [];
+console.log(id, "top")
+for (let child of children) {
+ let childpaths = getPaths(child);
+ childpaths.forEach(element => {
+  let newpath = [id].concat(element)
+  allPaths.push(newpath)
+ });
+}
+
+return allPaths;
+}
+
+console.log(getPaths("A"));
 
