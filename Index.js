@@ -960,11 +960,8 @@ class Queue {
         return null; 
     }
    let current = this.first;
-   while (current.next.next !== null) {
-   current = current.next;
-   }  
+   this.first = this.first.next;
    current.next = null;
-   this.last = current;
    this.length--;
    return this;
   }
@@ -980,7 +977,8 @@ const myQueue = new Queue(0);
 myQueue.enqueue(1);
 myQueue.enqueue(2);
 myQueue.enqueue(3);
-//console.log(myQueue.dequeue());
+console.log(myQueue)
+console.log(myQueue.dequeue());
 
 const nodes = {
   A: { cost: 1, children: ["B", "C"] },
@@ -1080,5 +1078,5 @@ for (let child of children) {
 return allPaths;
 }
 
-console.log(getPaths("A"));
+//console.log(getPaths("A"));
 
