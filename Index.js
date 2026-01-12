@@ -942,6 +942,8 @@ class Queue {
   constructor(value) {
     this.first = new NodeQueue(value);
     this.last = this.first;
+    this.min = this.first;
+    this.max =this.first;
     this.length = 1;
   }
 
@@ -950,6 +952,8 @@ class Queue {
     let newNode = new NodeQueue(value);
     this.last.next = newNode;
     this.last = newNode;
+    this.min = (newNode?.value < this.max.value) ? newNode: this.min;
+    this.max = (newNode?.value > this.max.value) ? newNode: this.max;
     this.length++;
     //console.log("in");
     return this;
@@ -966,8 +970,14 @@ class Queue {
    return this;
   }
 
-  minimum () {
-
+  mine () {
+    let current = this.first;
+    let minvalue = current;
+    while (current.next) {
+   minvalue = (current.value < minvalue) ? current : minvalue;
+    current = current.next;
+    }
+    return minvalue;
   }
 
 
@@ -977,8 +987,14 @@ const myQueue = new Queue(0);
 myQueue.enqueue(1);
 myQueue.enqueue(2);
 myQueue.enqueue(3);
-console.log(myQueue)
-console.log(myQueue.dequeue());
+const {last, first} =  myQueue;
+//console.log(first, last)
+
+//console.log(myQueue.mine())
+
+
+
+//console.log(myQueue.dequeue());
 
 const nodes = {
   A: { cost: 1, children: ["B", "C"] },
@@ -1079,4 +1095,77 @@ return allPaths;
 }
 
 //console.log(getPaths("A"));
+
+// # Reverse using Stack method
+
+function reverse(string) {
+if (!string) return undefined;
+    let stack = [];
+
+    for (let i = string.length - 1; i >= 0;i--) {
+
+        stack.push(string[i]);
+    }
+    return stack.join("");
+}
+
+
+///Hash functions/ tables
+
+
+class HashTable {
+  constructor(size = 5) {
+    this.keyMap = new Array(size);
+  }
+
+  _hashFunction(key) {
+    let sum = 0;
+    const PRIME_NUMBER = 31;
+
+    for (let i = 0; i < Math.min(key.length, 100); i++) {
+      const charCode = key.charCodeAt(i) - 96;
+      sum = (sum * PRIME_NUMBER + charCode) % this.keyMap.length;
+
+      
+    }
+
+    return sum;
+  }
+
+  set(key, value) {
+    const index = this._hashFunction(key);
+    //console.log(index);
+    if(!this.keyMap[index]) this.keyMap[index] = [];
+    this.keyMap[index].push([key,value]);
+    return this;
+  }
+
+  get(key) {
+    const index = this._hashFunction(key);
+
+    if (!this.keyMap[index]) return undefined;
+    return this.keyMap[index];
+  }
+
+
+}
+
+const phoneBook = new HashTable();
+phoneBook.set('john', '555-333-444');
+//console.log(phoneBook.get('john'))
+
+function Objectcounting(str) {
+  if (!str) return {};
+
+  const counts = {};
+  for (const word of str.trim().split(/\s+/)) {
+    const key = word.toLowerCase();
+    counts[key] = (counts[key] ?? 0) + 1;
+  }
+  return counts;
+}
+
+
+
+
 
