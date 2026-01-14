@@ -1096,65 +1096,125 @@ return allPaths;
 
 //console.log(getPaths("A"));
 
-// # Reverse using Stack method
+/**
+ * Reverse a string using a stack (array).
+ *
+ * Idea:
+ * - Walk the string from end → start
+ * - Push each character onto a stack
+ * - Join the stack back into a string
+ *
+ * Time:  O(n)
+ * Space: O(n)
+ *
+ * @param {string} str
+ * @returns {string|undefined} Reversed string, or undefined for falsy input.
+ */
+function reverse(str) {
+  if (!str) return undefined;
 
-function reverse(string) {
-if (!string) return undefined;
-    let stack = [];
-
-    for (let i = string.length - 1; i >= 0;i--) {
-
-        stack.push(string[i]);
-    }
-    return stack.join("");
+  const stack = [];
+  for (let i = str.length - 1; i >= 0; i--) {
+    stack.push(str[i]);
+  }
+  return stack.join("");
 }
 
-
-///Hash functions/ tables
-
+/* ============================================================
+ * Hash Table (Separate Chaining)
+ * ============================================================
+ * - keyMap is an array of "buckets"
+ * - each bucket is an array of [key, value] pairs
+ * - collisions are handled by storing multiple pairs in the same bucket
+ *
+ * NOTE:
+ * - This is a learning implementation: minimal features (no resizing)
+ * - _hashFunction assumes lowercase a-z keys; other chars may hash oddly
+ */
 
 class HashTable {
+  /**
+   * @param {number} size - Number of buckets. More buckets = fewer collisions.
+   */
   constructor(size = 5) {
     this.keyMap = new Array(size);
   }
 
+  /**
+   * Hash a string key into a bucket index.
+   * Uses a prime multiplier to spread keys out.
+   *
+   * Time: O(min(key.length, 100))
+   *
+   * @param {string} key
+   * @returns {number} index in [0, keyMap.length)
+   */
   _hashFunction(key) {
     let sum = 0;
     const PRIME_NUMBER = 31;
 
     for (let i = 0; i < Math.min(key.length, 100); i++) {
+      // Convert 'a' -> 1, 'b' -> 2, etc.
+      // (Assumes lowercase letters; 'A' or symbols will produce unexpected values)
       const charCode = key.charCodeAt(i) - 96;
       sum = (sum * PRIME_NUMBER + charCode) % this.keyMap.length;
-
-      
     }
 
     return sum;
   }
 
+  /**
+   * Insert a key/value pair into the table.
+   * Collision strategy: separate chaining (bucket holds multiple pairs).
+   *
+   * Time: O(1) average, O(n) worst (if many keys collide into one bucket)
+   *
+   * @param {string} key
+   * @param {*} value
+   * @returns {HashTable} this (for chaining)
+   */
   set(key, value) {
     const index = this._hashFunction(key);
-    //console.log(index);
-    if(!this.keyMap[index]) this.keyMap[index] = [];
-    this.keyMap[index].push([key,value]);
+
+    if (!this.keyMap[index]) this.keyMap[index] = [];
+    this.keyMap[index].push([key, value]);
+
     return this;
   }
 
+  /**
+   * Get the bucket for a key's index.
+   *
+   * NOTE:
+   * - This currently returns the entire bucket array, not the single value.
+   * - For a full get(key) you’d scan the bucket and match the key.
+   *
+   * @param {string} key
+   * @returns {Array<[string, *]>|undefined}
+   */
   get(key) {
     const index = this._hashFunction(key);
-
     if (!this.keyMap[index]) return undefined;
     return this.keyMap[index];
   }
-
-
 }
 
 const phoneBook = new HashTable();
-phoneBook.set('john', '555-333-444');
-//console.log(phoneBook.get('john'))
+phoneBook.set("john", "555-333-444");
 
-function Objectcounting(str) {
+/**
+ * Count word frequency in a string (case-insensitive).
+ *
+ * Example:
+ * "Hi hi there" -> { hi: 2, there: 1 }
+ *
+ * Time:  O(n) over number of words/characters
+ * Space: O(k) where k = unique words
+ *
+ * @param {string} str
+ * @returns {Record<string, number>}
+ */
+function objectCounting(str) {
   if (!str) return {};
 
   const counts = {};
@@ -1165,7 +1225,109 @@ function Objectcounting(str) {
   return counts;
 }
 
+/* ============================================================
+ * Binary Search Tree (BST)
+ * ============================================================
+ * TreeNode:
+ * - value: the data held at this node
+ * - left:  values < node.value
+ * - right: values > node.value
+ *
+ * BST:
+ * - root points to the top node
+ * - insert walks down left/right until it finds an empty spot
+ */
 
+class TreeNode {
+  /**
+   * @param {number} value
+   */
+  constructor(value) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+  }
+}
 
+class BST {
+  constructor() {
+    /** @type {TreeNode|null} */
+    this.root = null;
 
+    /** @type {number} */
+    this.size = 0;
+  }
 
+  /**
+   * Insert a new value into the BST.
+   *
+   * Rules:
+   * - smaller values go left
+   * - larger values go right
+   * - duplicates are rejected (throws)
+   *
+   * Time:  O(h) where h = tree height
+   *   - average O(log n)
+   *   - worst-case O(n) if tree becomes a linked list
+   *
+   * Space: O(1) extra (iterative)
+   *
+   * @param {number} value
+   * @returns {BST} this
+   */
+  insert(value) {
+    const newNode = new TreeNode(value);
+
+    // Case 1: empty tree
+    if (!this.root) {
+      this.root = newNode;
+      this.size++;
+      return this;
+    }
+
+    let current = this.root;
+
+    while (current) {
+      // Duplicate guard (policy choice)
+      if (value === current.value) throw new Error("Duplicate value");
+
+      if (value < current.value) {
+        // Go left
+        if (!current.left) {
+          current.left = newNode;
+          this.size++;
+          return this;
+        }
+        current = current.left;
+      } else {
+        // Go right
+        if (!current.right) {
+          current.right = newNode;
+          this.size++;
+          return this;
+        }
+        current = current.right;
+      }
+    }
+
+    return this; // (should never hit due to returns above)
+  }
+}
+
+const newTree = new BST();
+newTree.insert(9);
+newTree.insert(1);
+newTree.insert(10);
+newTree.insert(11);
+newTree.insert(9.5);
+newTree.insert(8);
+newTree.insert(7);
+
+// This will throw because 7 already exists:
+try {
+  newTree.insert(7);
+} catch (e) {
+  console.log(String(e));
+}
+
+console.log(newTree.root.right);
