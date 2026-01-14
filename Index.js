@@ -1312,6 +1312,21 @@ class BST {
 
     return this; // (should never hit due to returns above)
   }
+
+  includes(value) {
+if (!this.root) return false;          // empty tree => not found
+if (value === undefined) return false; // or throw
+
+let current = this.root;
+
+  while (current) {
+    if (value === current.value) return true;
+    current = value < current.value ? current.left : current.right;
+  }
+
+  return false;
+  }
+
 }
 
 const newTree = new BST();
@@ -1324,10 +1339,10 @@ newTree.insert(8);
 newTree.insert(7);
 
 // This will throw because 7 already exists:
-try {
-  newTree.insert(7);
-} catch (e) {
-  console.log(String(e));
-}
+//try {
+  //newTree.insert(7);
+//} catch (e) {
+  //console.log(String(e));
+//}
 
-console.log(newTree.root.right);
+console.log(newTree.includes(7));
