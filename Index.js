@@ -1327,16 +1327,35 @@ let current = this.root;
   return false;
   }
 
+  breathfirst () {
+ if (!this.root) return  undefined;
+   const queue = [this.root]; //[5,3,8] //[3,8,1] //[7,9]
+   const data = [];//[5,3,8,1,7]
+
+   while (queue.length) {//true// true again/ true again// true again/true again
+   let first = queue[0];
+    if(first.left) queue.push(first.left); //[pushes 3 into queue] // [pushes 1 into queue]// [pushes 7 in to que] // does nothing for 1//dpes mptjomg fpr 7
+    if (first.right)  queue.push(first.right); //pushes 8 into queue, [does not push ] // pushes[pushes 9 into queue] does nothign for 1/nothing for 7
+    data.push(queue.shift().value)//pushes 5 into data //pushes 3 in to data// pushes 8 into data/pushes 1 into data//nothing for 7
+   }
+
+   
+  return data; 
+  }
+
+
+
 }
 
 const newTree = new BST();
-newTree.insert(9);
-newTree.insert(1);
-newTree.insert(10);
-newTree.insert(11);
-newTree.insert(9.5);
+newTree.insert(5);
+newTree.insert(3);
 newTree.insert(8);
+newTree.insert(1);
 newTree.insert(7);
+newTree.insert(9);
+console.log(newTree.breathfirst())
+//newTree.insert(7);
 
 // This will throw because 7 already exists:
 //try {
@@ -1345,4 +1364,62 @@ newTree.insert(7);
   //console.log(String(e));
 //}
 
-console.log(newTree.includes(7));
+//console.log(newTree);
+
+function countDown(number) {
+  if (number === 0) return;
+  console.log(number);
+  countDown(number - 1);
+}
+
+//console.log(countDown(5) ?? 0)
+
+function factorail(n) {
+  if (n === 1) return 1;
+
+ return n * factorail(n -1);
+}
+
+
+//console.log(factorail(4))
+
+function treetravesal(tree) {
+  const rarry = [];
+  function recur(node){
+    if(node === null) return;
+    rarry.push(node.value);
+    recur(node.left);
+    recur(node.right);
+
+  }
+  recur(tree.root);
+
+return rarry;
+}
+
+//console.log(treetravesal(newTree));
+
+/*
+let numsgroup = [3,4,2,7,64];
+
+function mergersort(array) {
+  if (array.length <= 1) return array;
+
+  const mid = Math.floor(array.length / 2); // ✅ array, not arr
+
+  let left = mergersort(array.slice(0, mid));
+  let right = mergersort(array.slice(mid));
+
+  console.log("inside", left, "then right", right);
+
+  return [left, right]; // ✅ return something so parent doesn’t get undefined
+}
+
+console.log(mergersort([3,4,2,7,64]));
+
+
+function merge(left, right) {
+  console.log("outleft",left, "outright",right)
+}
+console.log(mergersort(numsgroup))
+*/
