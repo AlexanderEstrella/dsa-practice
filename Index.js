@@ -1327,7 +1327,7 @@ let current = this.root;
   return false;
   }
 
-  breathfirst () {
+  breadthfirst () {
  if (!this.root) return  undefined;
    const queue = [this.root]; //[5,3,8] //[3,8,1] //[7,9]
    const data = [];//[5,3,8,1,7]
@@ -1343,6 +1343,31 @@ let current = this.root;
   return data; 
   }
 
+  depthfirst(node=this.root, data = []) {
+    if(node === null) return data;
+    data.push(node.value);
+    if (node.left) this.depthfirst(node.left,data);
+    if (node.right) this.depthfirst(node.right,data);
+    return data;
+  }
+
+  dfsPostOrder(node=this.root, data = []) {
+    if(node === null) return data;
+    //data.push(node.value);
+    if (node.left) this.depthfirst(node.left,data);
+    if (node.right) this.depthfirst(node.right,data);
+    data.push(node.value);
+    return data;
+  }
+dfsinorderOrder(node=this.root, data = []) {
+    if(node === null) return data;
+    //data.push(node.value);
+    if (node.left) this.dfsinorderOrder(node.left,data);
+    data.push(node.value);
+    if (node.right) this.dfsinorderOrder(node.right,data);
+    return data;
+  }
+
 
 
 }
@@ -1354,7 +1379,8 @@ newTree.insert(8);
 newTree.insert(1);
 newTree.insert(7);
 newTree.insert(9);
-console.log(newTree.breathfirst())
+//console.log(newTree.dfsinorderOrder())
+//console.log(newTree.breadthfirst())
 //newTree.insert(7);
 
 // This will throw because 7 already exists:
@@ -1386,10 +1412,10 @@ function factorail(n) {
 function treetravesal(tree) {
   const rarry = [];
   function recur(node){
-    if(node === null) return;
+    if(node === null) return data;
     rarry.push(node.value);
-    recur(node.left);
-    recur(node.right);
+    recur(node.left,data);
+    recur(node.right,data);
 
   }
   recur(tree.root);
@@ -1423,3 +1449,61 @@ function merge(left, right) {
 }
 console.log(mergersort(numsgroup))
 */
+
+
+class Graph {
+  constructor() {
+   this.adjacencyList = {}; 
+  }
+
+
+  Addvertex(vtx) {
+  if (!this.adjacencyList[vtx]) {
+    this.adjacencyList[vtx] = [];
+    return true
+
+  }
+  return false;
+  }
+
+  AddEdges(vtx1, vtx2) {
+    if (this.adjacencyList[vtx1] && this.adjacencyList[vtx2]) {
+      this.adjacencyList[vtx1].push(vtx2);
+      this.adjacencyList[vtx2].push(vtx1);
+      return true;
+    }
+    return false;
+  }
+
+  RemoveEdge(vtx1, vtx2) {
+    if(this.adjacencyList[vtx1] && this.adjacencyList[vtx2]){
+      this.adjacencyList[vtx1] = this.adjacencyList[vtx2].filter(v => v !== vtx2);
+      this.adjacencyList[vtx2] = this.adjacencyList[vtx2].filter(v => v !== vtx1);
+      return true;
+    }
+    return false;
+  }
+
+  removeVertex(vtx){
+    if (!this.adjacencyList[vtx]) return undefined;
+    for (let neighbor of this.adjacencyList[vtx]) {
+      this.adjacencyList[neighbor] = this.adjacencyList[neighbor].filter(v => v !== vtx);
+    }
+    delete this.adjacencyList[vtx];
+    return this;
+  }
+
+}
+
+const g = new Graph();
+g.Addvertex("A");
+g.Addvertex("B");
+g.Addvertex("C");
+g.AddEdges("A","B");
+g.AddEdges("B","C");
+g.AddEdges("C","A");
+g.RemoveEdge("A", "B");
+console.log(g);
+g.removeVertex("A")
+//g.AddEdges("A","E");
+console.log(g);
