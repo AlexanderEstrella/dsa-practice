@@ -1240,7 +1240,10 @@ function objectCounting(str) {
 
 class TreeNode {
   /**
-   * @param {number} value
+   * Simple BST node.
+   * value: number stored at this node
+   * left:  subtree of smaller values
+   * right: subtree of larger values
    */
   constructor(value) {
     this.value = value;
@@ -1254,54 +1257,59 @@ class BST {
     /** @type {TreeNode|null} */
     this.root = null;
 
-    /** @type {number} */
+    /** @type {number} number of nodes in the tree */
     this.size = 0;
   }
 
   /**
    * Insert a new value into the BST.
    *
-   * Rules:
-   * - smaller values go left
-   * - larger values go right
-   * - duplicates are rejected (throws)
+   * BST invariant:
+   * - left subtree contains values < node.value
+   * - right subtree contains values > node.value
    *
-   * Time:  O(h) where h = tree height
-   *   - average O(log n)
-   *   - worst-case O(n) if tree becomes a linked list
+   * Duplicate policy:
+   * - rejects duplicates (throws)
    *
-   * Space: O(1) extra (iterative)
+   * Time:  O(h)  (h = tree height)
+   *   - average: O(log n) on balanced-ish trees
+   *   - worst:   O(n) if tree is skewed (linked-list shape)
+   *
+   * Space: O(1) extra (iterative insert)
    *
    * @param {number} value
-   * @returns {BST} this
+   * @returns {BST} this (for chaining)
    */
   insert(value) {
     const newNode = new TreeNode(value);
 
-    // Case 1: empty tree
+    // Case 1: empty tree => new node becomes root
     if (!this.root) {
       this.root = newNode;
       this.size++;
       return this;
     }
 
+    // Walk the tree until we find an empty left/right spot.
     let current = this.root;
 
     while (current) {
-      // Duplicate guard (policy choice)
+      // Duplicate guard: stop early if value already exists.
       if (value === current.value) throw new Error("Duplicate value");
 
       if (value < current.value) {
-        // Go left
+        // Go left: smaller values live on the left side.
         if (!current.left) {
+          // Found insertion spot.
           current.left = newNode;
           this.size++;
           return this;
         }
         current = current.left;
       } else {
-        // Go right
+        // Go right: larger values live on the right side.
         if (!current.right) {
+          // Found insertion spot.
           current.right = newNode;
           this.size++;
           return this;
@@ -1310,68 +1318,132 @@ class BST {
       }
     }
 
-    return this; // (should never hit due to returns above)
+    // Unreachable (we always return when we insert).
+    return this;
   }
 
+  /**
+   * Search for a value in the BST.
+   *
+   * Time:  O(h) average O(log n), worst O(n)
+   * Space: O(1)
+   *
+   * @param {number} value
+   * @returns {boolean}
+   */
   includes(value) {
-if (!this.root) return false;          // empty tree => not found
-if (value === undefined) return false; // or throw
+    if (!this.root) return false;          // empty tree => not found
+    if (value === undefined) return false; // could also throw, interviewer preference
 
-let current = this.root;
+    let current = this.root;
 
-  while (current) {
-    if (value === current.value) return true;
-    current = value < current.value ? current.left : current.right;
+    // At each step, we eliminate half the tree (in a balanced tree).
+    while (current) {
+      if (value === current.value) return true;
+      current = value < current.value ? current.left : current.right;
+    }
+
+    return false;
   }
 
-  return false;
-  }
+  /**
+   * Breadth-first traversal (level order).
+   *
+   * Returns values from top to bottom, left to right.
+   *
+   * NOTE (interview detail):
+   * - Using Array.shift() is O(n) per removal (re-indexing).
+   * - For interview “cleanliness,” use a pointer index instead.
+   *
+   * Time:  O(n) nodes visited
+   * Space: O(w) where w is max width of tree (queue size)
+   *
+   * @returns {number[]|undefined}
+   */
+  breadthfirst() {
+    if (!this.root) return undefined;
 
-  breadthfirst () {
- if (!this.root) return  undefined;
-   const queue = [this.root]; //[5,3,8] //[3,8,1] //[7,9]
-   const data = [];//[5,3,8,1,7]
+    // Queue holds nodes to process in FIFO order.
+    const queue = [this.root];
+    const data = [];
 
-   while (queue.length) {//true// true again/ true again// true again/true again
-   let first = queue[0];
-    if(first.left) queue.push(first.left); //[pushes 3 into queue] // [pushes 1 into queue]// [pushes 7 in to que] // does nothing for 1//dpes mptjomg fpr 7
-    if (first.right)  queue.push(first.right); //pushes 8 into queue, [does not push ] // pushes[pushes 9 into queue] does nothign for 1/nothing for 7
-    data.push(queue.shift().value)//pushes 5 into data //pushes 3 in to data// pushes 8 into data/pushes 1 into data//nothing for 7
-   }
+    // While there are nodes waiting to be processed:
+    while (queue.length) {
+      // "Peek" the front of queue (next node to process).
+      const first = queue[0];
 
-   
-  return data; 
-  }
+      // Enqueue children BEFORE removing current node (common BFS pattern).
+      if (first.left) queue.push(first.left);
+      if (first.right) queue.push(first.right);
 
-  depthfirst(node=this.root, data = []) {
-    if(node === null) return data;
-    data.push(node.value);
-    if (node.left) this.depthfirst(node.left,data);
-    if (node.right) this.depthfirst(node.right,data);
+      // Dequeue and record value.
+      data.push(queue.shift().value);
+    }
+
     return data;
   }
 
-  dfsPostOrder(node=this.root, data = []) {
-    if(node === null) return data;
-    //data.push(node.value);
-    if (node.left) this.depthfirst(node.left,data);
-    if (node.right) this.depthfirst(node.right,data);
-    data.push(node.value);
+  /**
+   * Depth-first traversal (preorder): Node -> Left -> Right
+   *
+   * Time:  O(n)
+   * Space: O(h) recursion stack (worst O(n) if skewed)
+   *
+   * @param {TreeNode|null} node
+   * @param {number[]} data
+   * @returns {number[]}
+   */
+  depthfirst(node = this.root, data = []) {
+    if (node === null) return data;
+
+    data.push(node.value);              // visit node
+    if (node.left) this.depthfirst(node.left, data);
+    if (node.right) this.depthfirst(node.right, data);
+
     return data;
   }
-dfsinorderOrder(node=this.root, data = []) {
-    if(node === null) return data;
-    //data.push(node.value);
-    if (node.left) this.dfsinorderOrder(node.left,data);
-    data.push(node.value);
-    if (node.right) this.dfsinorderOrder(node.right,data);
+
+  /**
+   * DFS postorder: Left -> Right -> Node
+   *
+   * Common use: deleting/freeing nodes, evaluating expression trees, etc.
+   *
+   * FIX: you were accidentally calling this.depthfirst(...) instead of this.dfsPostOrder(...)
+   *
+   * Time:  O(n)
+   * Space: O(h)
+   */
+  dfsPostOrder(node = this.root, data = []) {
+    if (node === null) return data;
+
+    if (node.left) this.dfsPostOrder(node.left, data);
+    if (node.right) this.dfsPostOrder(node.right, data);
+    data.push(node.value);              // visit AFTER children
+
     return data;
   }
 
+  /**
+   * DFS inorder: Left -> Node -> Right
+   *
+   * Key BST fact:
+   * - Inorder traversal returns values in sorted ascending order.
+   *
+   * Time:  O(n)
+   * Space: O(h)
+   */
+  dfsinorderOrder(node = this.root, data = []) {
+    if (node === null) return data;
 
+    if (node.left) this.dfsinorderOrder(node.left, data);
+    data.push(node.value);
+    if (node.right) this.dfsinorderOrder(node.right, data);
 
+    return data;
+  }
 }
 
+// ------------------ Usage / sanity checks ------------------
 const newTree = new BST();
 newTree.insert(5);
 newTree.insert(3);
@@ -1379,93 +1451,80 @@ newTree.insert(8);
 newTree.insert(1);
 newTree.insert(7);
 newTree.insert(9);
-//console.log(newTree.dfsinorderOrder())
-//console.log(newTree.breadthfirst())
-//newTree.insert(7);
 
-// This will throw because 7 already exists:
-//try {
-  //newTree.insert(7);
-//} catch (e) {
-  //console.log(String(e));
-//}
+// console.log(newTree.dfsinorderOrder());  // [1,3,5,7,8,9]
+// console.log(newTree.breadthfirst());     // [5,3,8,1,7,9]
 
-//console.log(newTree);
+// ------------------ Recursion examples ------------------
 
+/**
+ * Countdown recursion demo.
+ * Time: O(n)
+ * Space: O(n) recursion depth
+ */
 function countDown(number) {
   if (number === 0) return;
   console.log(number);
   countDown(number - 1);
 }
 
-//console.log(countDown(5) ?? 0)
-
+/**
+ * Factorial recursion.
+ * Time: O(n)
+ * Space: O(n)
+ *
+ * NOTE: factorial(0) is typically 1; you only handle n===1.
+ */
 function factorail(n) {
   if (n === 1) return 1;
-
- return n * factorail(n -1);
+  return n * factorail(n - 1);
 }
 
-
-//console.log(factorail(4))
-
+/**
+ * Preorder traversal returning array.
+ *
+ * FIX: your version referenced "data" but used "rarry" + passed "data" that didn't exist.
+ */
 function treetravesal(tree) {
-  const rarry = [];
-  function recur(node){
-    if(node === null) return data;
-    rarry.push(node.value);
-    recur(node.left,data);
-    recur(node.right,data);
+  const result = [];
 
+  function recur(node) {
+    if (node === null) return;
+    result.push(node.value);
+    recur(node.left);
+    recur(node.right);
   }
+
   recur(tree.root);
-
-return rarry;
+  return result;
 }
 
-//console.log(treetravesal(newTree));
+// console.log(treetravesal(newTree)); // [5,3,1,8,7,9]
 
-/*
-let numsgroup = [3,4,2,7,64];
-
-function mergersort(array) {
-  if (array.length <= 1) return array;
-
-  const mid = Math.floor(array.length / 2); // ✅ array, not arr
-
-  let left = mergersort(array.slice(0, mid));
-  let right = mergersort(array.slice(mid));
-
-  console.log("inside", left, "then right", right);
-
-  return [left, right]; // ✅ return something so parent doesn’t get undefined
-}
-
-console.log(mergersort([3,4,2,7,64]));
-
-
-function merge(left, right) {
-  console.log("outleft",left, "outright",right)
-}
-console.log(mergersort(numsgroup))
-*/
-
+// ------------------ Graph ------------------
 
 class Graph {
   constructor() {
-   this.adjacencyList = {}; 
+    // adjacencyList[v] = array of neighboring vertices
+    this.adjacencyList = {};
   }
 
-
+  /**
+   * Add a vertex if it doesn't exist.
+   * Time: O(1)
+   */
   Addvertex(vtx) {
-  if (!this.adjacencyList[vtx]) {
-    this.adjacencyList[vtx] = [];
-    return true
-
+    if (!this.adjacencyList[vtx]) {
+      this.adjacencyList[vtx] = [];
+      return true;
+    }
+    return false;
   }
-  return false;
-  }
 
+  /**
+   * Add an undirected edge between vtx1 and vtx2.
+   * Time: O(1) (push)
+   */
   AddEdges(vtx1, vtx2) {
     if (this.adjacencyList[vtx1] && this.adjacencyList[vtx2]) {
       this.adjacencyList[vtx1].push(vtx2);
@@ -1475,35 +1534,153 @@ class Graph {
     return false;
   }
 
+  /**
+   * Remove an undirected edge.
+   *
+   * FIX: you had a typo: vtx1 list was reassigned using vtx2 list.
+   *
+   * Time: O(deg(v1) + deg(v2)) because filter scans neighbor arrays
+   */
   RemoveEdge(vtx1, vtx2) {
-    if(this.adjacencyList[vtx1] && this.adjacencyList[vtx2]){
-      this.adjacencyList[vtx1] = this.adjacencyList[vtx2].filter(v => v !== vtx2);
+    if (this.adjacencyList[vtx1] && this.adjacencyList[vtx2]) {
+      this.adjacencyList[vtx1] = this.adjacencyList[vtx1].filter(v => v !== vtx2);
       this.adjacencyList[vtx2] = this.adjacencyList[vtx2].filter(v => v !== vtx1);
       return true;
     }
     return false;
   }
 
-  removeVertex(vtx){
+  /**
+   * Remove a vertex and all edges pointing to it.
+   *
+   * Time: O(sum of degrees of neighbors) due to filtering
+   */
+  removeVertex(vtx) {
     if (!this.adjacencyList[vtx]) return undefined;
-    for (let neighbor of this.adjacencyList[vtx]) {
+
+    // Remove vtx from each neighbor’s adjacency list
+    for (const neighbor of this.adjacencyList[vtx]) {
       this.adjacencyList[neighbor] = this.adjacencyList[neighbor].filter(v => v !== vtx);
     }
+
     delete this.adjacencyList[vtx];
     return this;
   }
-
 }
 
-const g = new Graph();
-g.Addvertex("A");
-g.Addvertex("B");
-g.Addvertex("C");
-g.AddEdges("A","B");
-g.AddEdges("B","C");
-g.AddEdges("C","A");
-g.RemoveEdge("A", "B");
-console.log(g);
-g.removeVertex("A")
-//g.AddEdges("A","E");
-console.log(g);
+// ------------------ Sorting ------------------
+
+/**
+ * Bubble Sort
+ * - Repeatedly swaps adjacent out-of-order pairs.
+ *
+ * Optimization:
+ * - If we pass through without any swaps, array is already sorted => break early.
+ *
+ * Time:  O(n^2) worst/avg
+ * Best:  O(n) if already sorted (with early break)
+ * Space: O(1)
+ */
+function bubblesort(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    let swapped = false;
+
+    for (let j = 0; j < i; j++) {
+      if (arr[j] > arr[j + 1]) {
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        swapped = true;
+      }
+    }
+
+    if (!swapped) break;
+  }
+
+  return arr;
+}
+
+/**
+ * Selection Sort
+ * - Select smallest element from unsorted region and swap into place.
+ *
+ * Time:  O(n^2)
+ * Space: O(1)
+ */
+function selectionsort(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    let minIndex = i;
+
+    for (let j = i + 1; j < arr.length; j++) {
+      if (arr[j] < arr[minIndex]) minIndex = j;
+    }
+
+    if (i !== minIndex) {
+      [arr[i], arr[minIndex]] = [arr[minIndex], arr[i]];
+    }
+  }
+
+  return arr;
+}
+
+/**
+ * Insertion Sort
+ * - Builds a sorted left side by inserting current element into correct spot.
+ *
+ * Time:  O(n^2) worst/avg
+ * Best:  O(n) when nearly sorted
+ * Space: O(1)
+ */
+function insertionsort(arr) {
+  for (let i = 1; i < arr.length; i++) {
+    const key = arr[i];
+    let j = i - 1;
+
+    // Shift larger values right until insertion point opens
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j--;
+    }
+
+    // Insert key at correct position
+    arr[j + 1] = key;
+  }
+
+  return arr;
+}
+
+/**
+ * Merge Sort
+ * - Divide array into halves, sort each, then merge.
+ *
+ * Time:  O(n log n)
+ * Space: O(n) (merge output arrays)
+ */
+function mergesort(arr) {
+  if (arr.length <= 1) return arr;
+
+  const mid = Math.floor(arr.length / 2);
+  const left = mergesort(arr.slice(0, mid));
+  const right = mergesort(arr.slice(mid));
+
+  return merge(left, right);
+}
+
+/**
+ * Merge step for merge sort (two sorted arrays -> one sorted array).
+ * Time:  O(n)
+ * Space: O(n)
+ */
+function merge(left, right) {
+  let i = 0;
+  let j = 0;
+  const out = [];
+
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) out.push(left[i++]);
+    else out.push(right[j++]);
+  }
+
+  while (i < left.length) out.push(left[i++]);
+  while (j < right.length) out.push(right[j++]);
+
+  return out;
+}
